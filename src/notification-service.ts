@@ -5,7 +5,7 @@ const cron = require('node-cron')
 
 export class NotificationService {
     async makeTask(doctor : Doctor, time : string, userName : string){
-        const twoHoursBeforeTime = moment(time).subtract(30, "second");
+        const twoHoursBeforeTime = moment(time).subtract(2, "hours");
         const oneDayBeforeTime = moment(time).subtract(1, "day");
         //За два часа до времени
         cron.schedule(
