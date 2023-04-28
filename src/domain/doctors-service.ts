@@ -56,8 +56,8 @@ export class DoctorsService {
             id : (+new Date()).toString(),
             time : time
         }
-        const newSlots = allSlots.push(slot)
-        return await this.doctorsDbRepository.addSlot(slot, term)
+        const newSlots : Slot[] = [...allSlots, slot]
+        return await this.doctorsDbRepository.addSlot(newSlots, term)
 
     }
 

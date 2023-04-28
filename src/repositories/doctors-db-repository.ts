@@ -45,7 +45,7 @@ export class DoctorsDbRepository {
 
     //Add free slot to doctor
 
-    async addSlot(slot : Slot, term : string) : Promise <boolean>{
+    async addSlot(slot : Slot[], term : string) : Promise <boolean>{
 
         const status = await DoctorModelClass.updateOne({$or: [
                 {id: term},
