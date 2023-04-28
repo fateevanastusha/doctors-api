@@ -68,13 +68,14 @@ export class DoctorsService {
         let doctor : Doctor | null = await this.doctorsDbRepository.getDoctor(term)
         if (!doctor) return false
         let slots = doctor.slots
-        slots = slots.filter(a => a.time !== time)
+        let slots1 = slots.filter(a => a.time !== time)
+        if (slots1.length === slots.length) return false
 
         //перед удалением сделаем задачу для напоминания
 
         await this.notificationService.makeTask(doctor, time, userLastName)
 
-        return await this.doctorsDbRepository.deleteSlot(slots, term)
+        return await this.doctorsDbRepository.deleteSlot(slots1, term)
 
 
     }
