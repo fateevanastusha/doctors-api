@@ -1,38 +1,45 @@
-import {Request, Response} from "express";
-import {paginationHelpers} from "../helpers/pagination-helpers";
-import {SortDirection} from "mongodb";
+import {Response, Request} from "express";
 import {UsersService} from "../domain/users-service";
 import {User} from "../types/types";
 
 export class UsersController {
-    constructor(protected usersService : UsersService) {}
-    //GET ALL USERS WITH AUTH
-    async getAllUsers(req: Request, res: Response){
-        let pageSize : number = paginationHelpers.pageSize(<string>req.query.pageSize)
-        let pageNumber : number = paginationHelpers.pageNumber(<string>req.query.pageNumber)
-        let sortBy : string = paginationHelpers.sortBy(<string>req.query.sortBy)
-        let sortDirection : SortDirection = paginationHelpers.sortDirection(<string>req.query.sortDirection)
-        let searchLoginTerm : string = paginationHelpers.searchLoginTerm(<string>req.query.searchLoginTerm)
-        let searchEmailTerm : string = paginationHelpers.searchEmailTerm(<string>req.query.searchEmailTerm)
-        const allUsers = await this.usersService.getAllUsers(pageSize, pageNumber, sortBy, sortDirection,searchLoginTerm, searchEmailTerm);
-        res.status(200).send(allUsers)
+
+    constructor(protected usersService : UsersService) {
     }
-    //POST USER WITH AUTH
-    async createNewUser(req: Request, res: Response){
-        const newUser : User | null = await this.usersService.createNewUser(req.body);
-        if (!newUser) {
-            res.sendStatus(404)
-        } else {
-            res.status(201).send(newUser)
-        }
+
+    async getUser(req: Request, res: Response){
+
+        const term = req.params.term
+        console.log(term)
+        const user : User | null = await this.usersService.getUser(term)
+        console.log(user)
+        if (!user) return res.sendStatus(404)
+        return res.status(200).send(user)
+
     }
-    //DELETE USER BY ID WITH AUTH
+
+    async getUsers(req: Request, res: Response){
+
+        const allUsers : User[] = await this.usersService.getUsers()
+        return res.status(200).send(allUsers)
+
+    }
+
     async deleteUser(req: Request, res: Response){
-        const status : boolean = await this.usersService.deleteUserById(req.params.id)
-        if (status) {
-            res.sendStatus(204)
-        } else {
-            res.sendStatus(404)
-        }
+
+        const term = req.params.term
+        const status : boolean = await this.usersService.deleteUser(term)
+        if(!status) return  res.sendStatus(404)
+        return res.sendStatus(204)
+
     }
+
+    async createUser(req: Request, res: Response){
+
+        const user = req.body
+        const newUser : User | null = await this.usersService.createUser(user)
+        res.status(201).send(newUser)
+
+    }
+
 }

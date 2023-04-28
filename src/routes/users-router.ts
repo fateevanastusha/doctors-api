@@ -1,32 +1,38 @@
 import {Router} from "express";
-import {emailCheck, loginCheck, passwordCheck, inputValidationMiddleware} from "../middlewares/input-valudation-middleware";
-import {adminAuth} from "./blogs-router";
 import {usersController} from "../compositon-root";
+import {
+    firstNameCheckUser,
+    inputValidationMiddleware,
+    lastNameCheckUser,
+    phoneNumberCheckUser
+} from "../middlewares/input-valudation-middleware";
 
 export const usersRouter = Router()
 
+//Get user
 
-//GET ALL USERS WITH AUTH
+usersRouter.get('/:term',
+    usersController.getUser.bind(usersController)
+)
+
+//Get users
 
 usersRouter.get('/',
-    adminAuth,
-    usersController.getAllUsers.bind(usersController)
-);
+    usersController.getUsers.bind(usersController)
+)
 
-//POST USER WITH AUTH
+//Delete user
+
+usersRouter.delete('/:term',
+    usersController.deleteUser.bind(usersController)
+)
+
+//Create user
 
 usersRouter.post('/',
-    adminAuth,
-    loginCheck,
-    passwordCheck,
-    emailCheck,
+    firstNameCheckUser,
+    lastNameCheckUser,
+    phoneNumberCheckUser,
     inputValidationMiddleware,
-    usersController.createNewUser.bind(usersController),
-);
-
-//DELETE USER BY ID WITH AUTH
-
-usersRouter.delete('/:id',
-    adminAuth,
-    usersController.deleteUser.bind(usersController)
-);
+    usersController.createUser.bind(usersController)
+)

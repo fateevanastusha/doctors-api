@@ -1,14 +1,10 @@
 import { NextFunction } from "express";
 import { Response, Request } from "express";
-import { CustomValidator } from "express-validator/src/base";
-import { body, validationResult } from 'express-validator';
-import {UsersRepository} from "../repositories/users-db-repository";
-import {BlogsRepository} from "../repositories/blogs-db-repositiory";
+import {body, CustomValidator, validationResult} from 'express-validator';
+import {usersDbRepository} from "../compositon-root";
 
-const usersRepository = new UsersRepository();
-const blogsRepository = new BlogsRepository();
+//Errors storage
 
-//errors storage
 export const inputValidationMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const error = validationResult(req)
     if (!error.isEmpty()) {
@@ -23,138 +19,42 @@ export const inputValidationMiddleware = (req: Request, res: Response, next: Nex
     }
     next()
 }
-export const createAccountValidationMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const error = validationResult(req)
-    if (!error.isEmpty()) {
-        return res.status(401).send({
-            errorsMessages: error.array({onlyFirstError: true}).map(e => {
-                return {
-                    message: e.msg,
-                    field: e.param
-                }
-            })
-        })
-    }
-    next()
-}
-//check for blog
-export const nameCheck = body('name').trim().isLength({min: 1, max: 15}).isString();
-export const descriptionCheck = body('description').trim().isLength({min: 1, max: 500}).isString();
-export const websiteUrlCheck = body('websiteUrl').trim().isLength({min: 1, max: 100}).matches(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/).isString()
 
-//check for blogId
-export const findByIdBlogs : CustomValidator = async value => {
-    const foundBlog = await blogsRepository.returnBlogById(value);
-    if (!foundBlog) {
-        throw new Error('not blogId')
-    }
-};
-
-//check for unique login
-
-export const checkForExistingLogin : CustomValidator = async login => {
-    const User = await usersRepository.returnUserByLogin(login)
-    if (User) {
-        throw new Error('login is already exist')
-    }
-    return true
-}
-//check for unique email
-
-export const checkForUniqueEmail : CustomValidator = async email => {
-    const User = await usersRepository.returnUserByEmail(email)
-    if (User) {
-        throw new Error('email is already exist')
+export const checkForExistingUserLastName : CustomValidator = async userLastName => {
+    const user = await usersDbRepository.getUser(userLastName)
+    if (!user) {
+        throw new Error('not existing user')
     }
     return true
 }
 
-//check for existing email
-
-export const checkForEmail : CustomValidator = async email => {
-    const User = await usersRepository.returnUserByEmail(email)
-    if (!User) {
-        throw new Error('email not exist')
+export const isTimeValid : CustomValidator = async time => {
+    const inputDate = new Date(time);
+    const maxTime = new Date(Date.now() + 1000 * 60 * 121)
+    console.log(inputDate <= maxTime)
+    if (inputDate <= maxTime) {
+        throw new Error('time is invalid')
     }
     return true
 }
 
+//Check create user input
 
-export const checkForRecoveryEmail : CustomValidator = async email => {
-    const User = await usersRepository.returnUserByEmail(email)
-    if (!User) {
-        return true
-    }
-    return true
-}
+export const firstNameCheckUser = body('firstName').trim().isLength({min: 1, max: 30}).isString();
+export const lastNameCheckUser = body('lastName').trim().isLength({min: 1, max: 30}).isString();
+export const phoneNumberCheckUser = body('phoneNumber').trim().isLength({min: 1, max: 100}).isMobilePhone("any").isString()
 
+//Check create doctor input
 
-//check for existing confirmation code
+export const firstNameCheckDoctor = body('firstName').trim().isLength({min: 1, max: 30}).isString();
+export const lastNameCheckDoctor = body('lastName').trim().isLength({min: 1, max: 30}).isString();
+export const specCheckDoctor = body('spec').trim().isLength({min: 1, max: 100}).isString()
 
-export const checkForExistingConfirmationCode : CustomValidator = async code => {
-    const status : boolean = await usersRepository.checkForConfirmationCode(code)
-    if (!status) {
-        throw new Error('code is wrong')
-    } else {
-        return true
-    }
-}
+//Check for slot
 
-//check for confirmed account
-
-export const checkForNotConfirmedByEmailOrCode : CustomValidator = async email => {
-    const status : boolean = await usersRepository.checkForConfirmedAccountByEmailOrCode(email)
-    if (status) {
-        throw new Error('account is confirmed')
-    } else {
-        return true
-    }
-}
-
-export const checkForLikeRequest : CustomValidator = async likeStatus => {
-    if (likeStatus === 'Like' || likeStatus === 'Dislike' || likeStatus === 'None'){
-        return true;
-    } else {
-        throw new Error('status is invalid')
-    }
-}
-
-export const checkForPasswordAuth : CustomValidator = async (login, { req }) => {
-    const User = await usersRepository.returnUserByField(login)
-    if (!User){
-        throw new Error('login is already exist')
-    }
-    const hash = User.password
-    const password = req.body.password
-    const status = bcrypt.compareSync(password, hash);
-    if (!status){
-        throw new Error('invalid login or password')
-    }
-}
+export const timeCheckSlot = body('time').trim().isString().matches(/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/).custom(isTimeValid)
+export const lastNameUserExistingCheck = body('userLastName').custom(checkForExistingUserLastName)
 
 
-//check for post
-export const titleCheck = body('title').trim().isLength({min:1, max: 30}).isString()
-export const shortDescriptionCheck = body('shortDescription').trim().isLength({min:1,max:100}).isString()
-export const contentCheck = body('content').trim().isLength({min:1, max: 1000}).isString()
-export const blogIdCheck = body('blogId').trim().custom(findByIdBlogs).isString()
 
-//check for user
-export const loginCheck = body('login').isString().trim().notEmpty().isLength({min:3, max: 10}).custom(checkForExistingLogin)
-export const passwordCheck = body ('password').trim().isLength({min:6, max: 20}).isString()
-export const emailCheck =  body ('email').isString().isEmail().trim().custom(checkForUniqueEmail)
 
-//check for comments
-export const commentContentCheck = body('content').trim().isLength({min:20, max: 300}).isString()
-
-//confirmationCheck
-
-export const codeConfirmationCheck = body('code').trim().isLength({min:12, max: 14}).isString().matches(/^\d+$/).custom(checkForExistingConfirmationCode).custom(checkForNotConfirmedByEmailOrCode)
-export const emailConfirmationCheck =  body ('email').isString().isEmail().trim().custom(checkForEmail).custom(checkForNotConfirmedByEmailOrCode)
-export const emailForRecoveryCheck = body ('email').isEmail().isString().trim()
-export const codeForRecoveryConfirmationCheck = body('recoveryCode').trim().isLength({min:12, max: 14}).isString().matches(/^\d+$/).custom(checkForExistingConfirmationCode)
-export const passwordForRecoveryCheck = body ('newPassword').trim().isLength({min:6, max: 20}).isString()
-
-//like request check
-
-export const likeRequestCheck = body('likeStatus').trim().isString().isLength({min : 1}).custom(checkForLikeRequest)
