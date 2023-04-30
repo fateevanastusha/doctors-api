@@ -28,6 +28,14 @@ export const checkForExistingUserLastName : CustomValidator = async userLastName
     return true
 }
 
+export const checkForNotSame : CustomValidator = async term => {
+    const user = await usersDbRepository.getUser(term)
+    if (user) {
+        throw new Error('existing user')
+    }
+    return true
+}
+
 export const isTimeValid : CustomValidator = async time => {
     const inputDate = new Date(time);
     const maxTime = new Date(Date.now() + 1000 * 60 * 121)
@@ -40,8 +48,8 @@ export const isTimeValid : CustomValidator = async time => {
 //Check create user input
 
 export const firstNameCheckUser = body('firstName').trim().isLength({min: 1, max: 30}).isString();
-export const lastNameCheckUser = body('lastName').trim().isLength({min: 1, max: 30}).isString();
-export const phoneNumberCheckUser = body('phoneNumber').trim().isLength({min: 1, max: 100}).isMobilePhone("any").isString()
+export const lastNameCheckUser = body('lastName').trim().isLength({min: 1, max: 30}).isString().custom(checkForNotSame)
+export const phoneNumberCheckUser = body('phoneNumber').trim().isLength({min: 1, max: 100}).isMobilePhone("any").isString().custom(checkForNotSame)
 
 //Check create doctor input
 
