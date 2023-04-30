@@ -269,6 +269,4 @@ describe('api', () => {
         })
     })
 
-    //delete all data
-
 })
