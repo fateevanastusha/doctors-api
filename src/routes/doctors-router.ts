@@ -53,3 +53,9 @@ doctorsRouter.delete('/slot/:term',
     inputValidationMiddleware,
     doctorsController.deleteSlot.bind(doctorsController)
 )
+
+//Clear expired slots
+
+doctorsRouter.delete('/slot/clear/:term',
+    doctorsController.clearExpiredSlots.bind(doctorsController)
+)

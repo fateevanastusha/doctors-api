@@ -71,4 +71,15 @@ export class DoctorsController {
         return res.sendStatus(204)
 
     }
+
+    //Clear expired slots
+
+    async clearExpiredSlots(req : Request, res : Response){
+
+        const term : string = req.params.term
+        const status : boolean = await this.doctorsService.clearFreeSlots(term)
+        if (!status) return res.sendStatus(404)
+        return res.sendStatus(204)
+
+    }
 }

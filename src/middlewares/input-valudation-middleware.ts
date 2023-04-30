@@ -31,7 +31,6 @@ export const checkForExistingUserLastName : CustomValidator = async userLastName
 export const isTimeValid : CustomValidator = async time => {
     const inputDate = new Date(time);
     const maxTime = new Date(Date.now() + 1000 * 60 * 121)
-    console.log(inputDate <= maxTime)
     if (inputDate <= maxTime) {
         throw new Error('time is invalid')
     }

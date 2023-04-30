@@ -74,9 +74,28 @@ export class DoctorsService {
         //перед удалением сделаем задачу для напоминания
 
         await this.notificationService.makeTask(doctor, time, userLastName)
-
         return await this.doctorsDbRepository.deleteSlot(slots1, term)
 
+    }
+
+    //Clear all free expired slots
+
+    async clearFreeSlots(term : string) : Promise<boolean> {
+
+        //get all slots
+        let doctor : Doctor | null = await this.doctorsDbRepository.getDoctor(term)
+        if (!doctor) return false
+        let slots = doctor.slots
+        let maxTime = new Date(Date.now() + 1000 * 60 * 121)
+        //filter slots
+        slots = slots.filter((a) => {
+            let inputDate = new Date(a.time)
+            console.log("input date = " + inputDate + "maxTime = " + maxTime)
+            console.log(inputDate <= maxTime)
+            if (inputDate <= maxTime) return false
+            return true
+        })
+        return await this.doctorsDbRepository.deleteSlot(slots,term)
 
     }
 }
