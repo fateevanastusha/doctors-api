@@ -8,7 +8,7 @@ export class DoctorsDbRepository {
         return await DoctorModelClass.findOne({$or: [
                 {id: term},
                 {lastName: term},
-            ]}, {_id: 0, __v: 0})
+            ]}, {_id: 0, __v: 0, slots : {_id : 0}})
             .lean()
 
     }
@@ -17,7 +17,7 @@ export class DoctorsDbRepository {
 
     async getDoctors() : Promise<Doctor[]>{
 
-        return await DoctorModelClass.find({},{_id: 0, __v: 0}).lean()
+        return await DoctorModelClass.find({},{_id: 0, __v: 0, slots : {_id : 0}}).lean()
 
     }
 

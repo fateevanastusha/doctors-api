@@ -10,9 +10,7 @@ export class UsersController {
     async getUser(req: Request, res: Response){
 
         const term = req.params.term
-        console.log(term)
         const user : User | null = await this.usersService.getUser(term)
-        console.log(user)
         if (!user) return res.sendStatus(404)
         return res.status(200).send(user)
 

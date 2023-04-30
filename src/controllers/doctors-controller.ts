@@ -30,7 +30,7 @@ export class DoctorsController {
 
     async deleteDoctor(req: Request, res : Response){
 
-        const term = req.params.termc
+        const term = req.params.term
         const status : boolean = await this.doctorsService.deleteDoctor(term)
         if (!status) return res.sendStatus(404)
         return res.sendStatus(204)
