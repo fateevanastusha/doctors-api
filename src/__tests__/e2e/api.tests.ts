@@ -36,8 +36,8 @@ describe('api', () => {
         let res = await request(app)
             .post('/users')
             .send({
-                lastName : "Fateeva",
-                phoneNumber : "+79158398127"
+                lastName : "Sergeev",
+                phoneNumber : "+79158391243"
             })
             .expect(400)
         expect(res.body).toStrictEqual({
